@@ -24,6 +24,11 @@ dependencies {
 	annotationProcessor 'org.projectlombok:lombok'
 	testImplementation 'org.springframework.boot:spring-boot-starter-test'
 
+	//썸네일으로 축소하는데 사용하기 좋은 라이브러리를 추가
+	//Scalr 라이브러리를 사용해서 오리지날 이미지를 최대 300x300으로 Resize 해줍니다
+	//정사각형이 아닌 경우 가장 긴 면은 300으로 줄이고 다른 면은 비례해서 Resize 됩니다
+	implementation 'org.imgscalr:imgscalr-lib:4.2'
+
 	//JPA 관련
 	implementation 'org.springframework.boot:spring-boot-starter-jdbc'
 	implementation 'org.springframework.boot:spring-boot-starter-data-jpa'
