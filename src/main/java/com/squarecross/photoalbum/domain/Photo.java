@@ -11,11 +11,13 @@ import javax.persistence.JoinColumn;
 import javax.persistence.ManyToOne;
 import javax.persistence.Table;
 import javax.persistence.UniqueConstraint;
-import lombok.Data;
+import lombok.Getter;
+import lombok.Setter;
 import org.hibernate.annotations.CreationTimestamp;
 
 @Entity
-@Data
+@Getter
+@Setter
 @Table(name = "photo", schema = "photo_album", uniqueConstraints = {
     @UniqueConstraint(columnNames = "photo_id")})
 public class Photo {
@@ -47,4 +49,5 @@ public class Photo {
 
     public Photo() {
     }
+
 }

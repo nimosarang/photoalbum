@@ -16,8 +16,6 @@ public class AlbumMapper {
     }
 
     public static List<AlbumDto> convertToDtoList(List<Album> albums) {
-        //리스트안에 있는 것들을 스트리밍하듯이 하나씩 하나씩 흘려보내듯이 처리합니다.
-        //albums 에 있는 각 앨범을 하나씩 하나씩 AlbumMapper.convertToDto 로 변화시킨 이후 리스트형태로 다시 모읍니다 collect(Collectors.toList()).
         return albums.stream().map(AlbumMapper::convertToDto).collect(Collectors.toList());
     }
 
@@ -29,6 +27,5 @@ public class AlbumMapper {
         album.setCreatedAt(albumDto.getCreatedAt());
         return album;
     }
-
 
 }

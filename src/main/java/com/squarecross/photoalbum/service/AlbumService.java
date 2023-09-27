@@ -1,6 +1,6 @@
 package com.squarecross.photoalbum.service;
 
-import com.squarecross.photoalbum.Constants;
+import com.squarecross.photoalbum.common.Constants;
 import com.squarecross.photoalbum.domain.Album;
 import com.squarecross.photoalbum.domain.Photo;
 import com.squarecross.photoalbum.dto.AlbumDto;
@@ -16,17 +16,17 @@ import java.util.Objects;
 import java.util.Optional;
 import java.util.stream.Collectors;
 import javax.persistence.EntityNotFoundException;
-import javax.persistence.Id;
-import org.springframework.beans.factory.annotation.Autowired;
+import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 @Service
+@Transactional
+@RequiredArgsConstructor
 public class AlbumService {
 
-    @Autowired
-    private AlbumRepository albumRepository;
-    @Autowired
-    private PhotoRepository photoRepository;
+    private final AlbumRepository albumRepository;
+    private final PhotoRepository photoRepository;
 
     public AlbumDto getAlbum(Long albumId) {
         Optional<Album> repository = albumRepository.findById(albumId);
@@ -57,6 +57,7 @@ public class AlbumService {
     //todo 3. 생성된 Album 객체를 데이터베이스에 저장 (albumId 생성)
     //todo 4. photos/original, photos/thumbnail 디렉토리 내 신규 앨범 디렉토리 생성.
     //todo 5. 생성된 앨범 정보 DTO 로 변환하여 Controller 에 출력
+
     public AlbumDto createAlbum(AlbumDto albumDto) {
         //Mapper 사용해서 DTO - Domain 변환 → save() 로 DB에 레코드 생성
         Album album = AlbumMapper.convertToDomain(albumDto);
@@ -72,7 +73,7 @@ public class AlbumService {
     }
 
     private void createAlbumDirectories(Album album) throws IOException {
-        //앨범 ID를 사용해서 폴더를 생성해줍니다.
+        //앨범 ID를 사용해서 폴더를 생성
         Files.createDirectories(
             Paths.get(Constants.PATH_PREFIX + "/photos/original/" + album.getAlbumId()));
         Files.createDirectories(
@@ -95,7 +96,7 @@ public class AlbumService {
         } else {
             throw new IllegalArgumentException("알 수 없는 정렬 기준입니다.");
         }
-        List<AlbumDto> albumDtos = AlbumMapper.convertToDtoList(albums);// Dto 리스트로 변환합니다.
+        List<AlbumDto> albumDtos = AlbumMapper.convertToDtoList(albums);// Dto 리스트로 변환
 
         for (AlbumDto albumDto : albumDtos) {
             List<Photo> top4 = photoRepository.findTop4ByAlbum_AlbumIdOrderByUploadedAtDesc(
@@ -103,9 +104,9 @@ public class AlbumService {
             albumDto.setThumbUrls(
                 top4.stream().map(Photo::getThumbUrl) //map(Photo::getThumbUrl) 썸네일 URL 추출
                     .map(c -> Constants.PATH_PREFIX + c).collect(Collectors.toList()));
-            //map(c -> Constants.PATH_PREFIX + c) 프로젝트 폴더 디렉토리까지 합쳐서 Full 이미지 Path 로 만들기.
-            //map 안에 있는 내용은 람다 함수인데, c는 stream 에서 넘어오는 각 string 이고 → 우측에 있는 구현내용은 c를 사용해서 실행할 내용입니다.
-            //collect(Collectors.toList()) 하나씩 수정을 거쳐서 들어오는 String 을 List 로 모읍니다
+            //map(c -> Constants.PATH_PREFIX + c) 프로젝트 폴더 디렉토리까지 합쳐서 Full 이미지 Path 로 만들기
+            //map 안에 있는 내용은 람다 함수인데, c는 stream 에서 넘어오는 각 string 이고 → 우측에 있는 구현내용은 c를 사용해서 실행할 내용임
+            //collect(Collectors.toList()) 하나씩 수정을 거쳐서 들어오는 String 을 List 로 모은다
         }
         return albumDtos;
     }
@@ -117,7 +118,7 @@ public class AlbumService {
     //  3.받은 Domain 객체에서 Setter 로 수정된 앨범명으로 변경해주기
     //  4.업데이트된 앨범 Domain 객체를 저장하기
     //  5.업데이트된 앨범 DTO 출력하기
-    //  데이터를 수정할 때 꼭 DB에서 조회, 수정한 후, 신규 객체가 아닌 수정된 객체로 저장해요!
+    //  데이터를 수정할 때 DB에서 조회, 수정한 후, 신규 객체가 아닌 수정된 객체로 저장
 
     public AlbumDto changeName(Long albumId, AlbumDto albumDto) {
         Optional<Album> album = albumRepository.findById(albumId);
@@ -135,35 +136,4 @@ public class AlbumService {
         albumRepository.delete(album);
     }
 
-
 }
-
-//Album 정보 조회하기 메서드 만들기
-//    public AlbumDto getAlbum(Long albumId) {
-//        Optional<Album> repository = albumRepository.findById(albumId);
-//        if (repository.isPresent()) {
-//            return repository.get();
-//        } else {
-//            throw new EntityNotFoundException(String.format("앨범 아이디 %d로 조회되지 않습니다.", albumId));
-//        }
-//    }
-
-//    public AlbumDto getAlbum(String albumIdentifier) {
-//        Optional<Album> album;
-//        if (StringUtils.isNumeric(albumIdentifier)) {
-//            Long albumId = Long.parseLong(albumIdentifier);
-//            album = albumRepository.findById(albumId);
-//            if (!album.isPresent()) {
-//                throw new EntityNotFoundException(String.format("앨범 아이디 %d로 조회되지 않습니다.", albumId));
-//            }
-//        } else {
-//            album = albumRepository.findByAlbumName(albumIdentifier);
-//            if (!album.isPresent()) {
-//                throw new EntityNotFoundException(String.format("앨범 이름 %s로 조회되지 않습니다.", albumIdentifier));
-//            }
-//        }
-//
-//        AlbumDto albumDto = AlbumMapper.convertToDto(album.get());
-//        albumDto.setCount(photoRepository.countByAlbum_AlbumId(albumDto.getAlbumId()));
-//        return albumDto;
-//    }
